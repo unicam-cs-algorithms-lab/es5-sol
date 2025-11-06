@@ -1,4 +1,5 @@
-## Soluzione Proposta dell'Esercitazione 1
+## Soluzione Proposta dell'Esercitazione 5
+
 File implementati:
 
 1. Aula.java
