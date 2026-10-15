@@ -1,10 +1,10 @@
 package it.unicam.cs.asdl2526.es5sol;
 
 /**
- * Una prenotazione riguarda una certa aula per un certo time slot.
- * 
- * @author Template: Luca Tesei, Implementation: Collective
- *
+ * Rappresenta la prenotazione di un {@link Aula} per un {@link TimeSlot}.
+ * <p>L'identità logica dipende solo da aula e intervallo; docente e motivo
+ * possono cambiare senza modificare {@code equals} e {@code hashCode}.
+ * L'ordinamento naturale confronta prima gli intervalli, poi le aule.
  */
 public class Prenotazione implements Comparable<Prenotazione> {
 
@@ -12,27 +12,21 @@ public class Prenotazione implements Comparable<Prenotazione> {
 
     private final TimeSlot timeSlot;
 
+    // Campo modificabile escluso dall'identità logica.
     private String docente;
 
     private String motivo;
 
     /**
-     * Costruisce una prenotazione.
-     * 
-     * @param aula
-     *                     l'aula a cui la prenotazione si riferisce
-     * @param timeSlot
-     *                     il time slot della prenotazione
-     * @param docente
-     *                     il nome del docente che ha prenotato l'aula
-     * @param motivo
-     *                     il motivo della prenotazione
-     * @throws NullPointerException
-     *                                  se uno qualsiasi degli oggetti passati è
-     *                                  null
+     * Costruisce una prenotazione con identità fissata da aula e time slot.
+     * @param aula aula prenotata
+     * @param timeSlot intervallo prenotato
+     * @param docente docente responsabile
+     * @param motivo motivo della prenotazione
+     * @throws NullPointerException se un argomento è null
      */
     public Prenotazione(Aula aula, TimeSlot timeSlot, String docente,
-            String motivo) {
+                        String motivo) {
         if (aula == null)
             throw new NullPointerException(
                     "Tentativo di costruire una prenotazione senza aula");
@@ -52,47 +46,57 @@ public class Prenotazione implements Comparable<Prenotazione> {
     }
 
     /**
-     * @return the aula
+     * Restituisce l'aula che partecipa all'identità logica.
+     * @return aula della prenotazione
      */
     public Aula getAula() {
         return aula;
     }
 
     /**
-     * @return the timeSlot
+     * Restituisce l'intervallo della prenotazione.
+     * @return time slot
      */
     public TimeSlot getTimeSlot() {
         return timeSlot;
     }
 
     /**
-     * @return the docente
+     * Restituisce il docente, attributo modificabile non identitario.
+     * @return docente
      */
     public String getDocente() {
         return docente;
     }
 
     /**
-     * @return the motivo
+     * Restituisce il motivo, attributo modificabile non identitario.
+     * @return motivo
      */
     public String getMotivo() {
         return motivo;
     }
 
     /**
-     * @param docente the docente to set
+     * Modifica il docente senza cambiare l'identità logica.
+     * @param docente nuovo docente; il contratto originale del setter ammette null
      */
     public void setDocente(String docente) {
         this.docente = docente;
     }
 
     /**
-     * @param motivo the motivo to set
+     * Modifica il motivo senza cambiare l'identità logica.
+     * @param motivo nuovo motivo; il contratto originale del setter ammette null
      */
     public void setMotivo(String motivo) {
         this.motivo = motivo;
     }
 
+    /**
+     * Calcola l'hash usando solo aula e time slot, come equals.
+     * @return codice hash della prenotazione
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -103,9 +107,10 @@ public class Prenotazione implements Comparable<Prenotazione> {
         return result;
     }
 
-    /*
-     * L'uguaglianza è data solo da stessa aula e stesso time slot. Non sono
-     * ammesse prenotazioni diverse con stessa aula e stesso time slot.
+    /**
+     * Confronta soltanto aula e time slot, non docente e motivo.
+     * @param obj oggetto da confrontare
+     * @return true se la prenotazione ha la stessa aula e lo stesso intervallo
      */
     @Override
     public boolean equals(Object obj) {
@@ -127,10 +132,11 @@ public class Prenotazione implements Comparable<Prenotazione> {
         return true;
     }
 
-    /*
-     * Una prenotazione precede un altra in base all'ordine dei time slot. Se
-     * due prenotazioni hanno lo stesso time slot allora una precede l'altra in
-     * base all'ordine tra le aule.
+    /**
+     * Ordina prima per time slot, poi per aula; coerente con equals.
+     * @param o altra prenotazione
+     * @return risultato del confronto lessicografico
+     * @throws NullPointerException se o è null
      */
     @Override
     public int compareTo(Prenotazione o) {
@@ -141,6 +147,10 @@ public class Prenotazione implements Comparable<Prenotazione> {
         return this.aula.compareTo(o.aula);
     }
 
+    /**
+     * Restituisce una rappresentazione testuale della prenotazione.
+     * @return descrizione testuale, senza stampare sullo standard output
+     */
     @Override
     public String toString() {
         return "Prenotazione [aula = " + aula + ", time slot =" + timeSlot

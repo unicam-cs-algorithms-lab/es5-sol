@@ -1,12 +1,12 @@
 package it.unicam.cs.asdl2526.es5sol;
 
 /**
- * Una facility generica è una caratteristica o delle dotazioni che una certa
- * aula può avere. La classe va specificata ulteriormente per definire i diversi
- * tipi di facilities.
- * 
- * @author Template: Luca Tesei, Implementation: Collective
- *
+ * Descrive un servizio offerto da un'aula attraverso una superclasse astratta.
+ * <p>Il codice identifica logicamente la facility: {@code equals} e
+ * {@code hashCode} non dipendono né dalla descrizione né dalla sottoclasse.
+ * Il metodo astratto {@link #satisfies(Facility)} delega alle sottoclassi
+ * la regola di soddisfacimento della richiesta. Uguaglianza e soddisfacimento
+ * sono quindi due relazioni distinte.
  */
 public abstract class Facility {
 
@@ -15,15 +15,10 @@ public abstract class Facility {
     private final String descrizione;
 
     /**
-     * Costruisce una certa facility generica.
-     * 
-     * @param codice
-     *                        identifica la facility univocamente
-     * @param descrizione
-     *                        descrizione della facility
-     * @throws NullPointerException
-     *                                  se una qualsiasi delle informazioni
-     *                                  richieste è nulla.
+     * Inizializza i dati comuni a tutte le sottoclassi.
+     * @param codice identificativo della facility
+     * @param descrizione descrizione testuale
+     * @throws NullPointerException se uno dei parametri è null
      */
     public Facility(String codice, String descrizione) {
         if (codice == null || descrizione == null)
@@ -34,22 +29,24 @@ public abstract class Facility {
     }
 
     /**
-     * @return the codice
+     * Restituisce il codice che determina l'identità logica.
+     * @return codice della facility
      */
     public String getCodice() {
         return codice;
     }
 
     /**
-     * @return the descrizione
+     * Restituisce la descrizione, non rilevante per l'identità logica.
+     * @return descrizione
      */
     public String getDescrizione() {
         return descrizione;
     }
 
-    /*
-     * Poiché l'uguaglianza è basata sul codice, anche l'hashcode deve essere
-     * basato sul codice
+    /**
+     * Calcola un hash coerente con equals usando il solo codice.
+     * @return hash del codice identificativo
      */
     @Override
     public int hashCode() {
@@ -59,8 +56,12 @@ public abstract class Facility {
         return result;
     }
 
-    /*
-     * L'uguaglianza di due facilities è basata unicamente sul codice
+    /**
+     * Definisce l'uguaglianza per tutte le sottoclassi in base al codice.
+     * <p>Due facility con stesso codice sono uguali anche se di sottoclassi
+     * diverse o con quantità diverse; non confondere con {@code satisfies}.
+     * @param obj oggetto da confrontare
+     * @return true se è una Facility con lo stesso codice
      */
     @Override
     public boolean equals(Object obj) {
@@ -77,6 +78,10 @@ public abstract class Facility {
         return true;
     }
 
+    /**
+     * Produce una rappresentazione testuale dei dati comuni.
+     * @return stringa descrittiva della facility
+     */
     @Override
     public String toString() {
         return "Facility [codice=" + codice + ", descrizione=" + descrizione
@@ -84,20 +89,12 @@ public abstract class Facility {
     }
 
     /**
-     * Determina se questa facility soddisfa un'altra facility data. Ad esempio
-     * se questa facility indica che è presente un proiettore HDMI, allora essa
-     * soddisfa la facility "presenza di un proiettore HDMI". Un altro esempio:
-     * se questa facility indica un numero di posti a sedere pari a 30, allora
-     * essa soddisfa ogni altra facility che indica che ci sono un numero di
-     * posti minore o uguale a 30. Il metodo dipende dal tipo di facility, per
-     * questo è astratto e va definito nelle varie sottoclassi.
-     * 
-     * @param o
-     *              l'altra facility con cui determinare la compatibilità
-     * @return true se questa facility soddisfa la facility passata, false
-     *         altrimenti
-     * @throws NullPointerException
-     *                                  se la facility passata è nulla.
+     * Stabilisce se la facility disponibile soddisfa una richiesta.
+     * <p>È un metodo astratto: la regola concreta dipende dalla sottoclasse
+     * effettiva che riceve la chiamata (selezione posticipata).
+     * @param o facility richiesta
+     * @return true se la richiesta è soddisfatta
+     * @throws NullPointerException se o è null
      */
     public abstract boolean satisfies(Facility o);
 

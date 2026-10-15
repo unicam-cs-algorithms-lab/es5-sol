@@ -1,58 +1,52 @@
-/**
- * 
- */
 package it.unicam.cs.asdl2526.es5sol;
 
 /**
- * Una Quantitative Facility è una facility che contiene una informazione
- * quantitativa. Ad esempio la presenza di 50 posti a sedere oppure la presenza
- * di 20 thin clients.
- * 
- * @author Template: Luca Tesei, Implementation: Collective
- *
+ * Facility che rappresenta un servizio disponibile in una certa quantità.
+ * <p>Estende {@link Facility} aggiungendo il campo {@code quantity}.
+ * La disponibilità soddisfa una richiesta quantitativa con lo stesso codice
+ * quando la quantità disponibile è almeno quella richiesta.
+ * L'identità logica resta basata sul solo codice, anche con quantità diverse.
  */
 public class QuantitativeFacility extends Facility {
 
+    // La quantità riguarda satisfies, non equals.
     private final int quantity;
 
     /**
-     * Costruisce una facility quantitativa.
-     * 
-     * @param codice
-     *                        codice identificativo della facility
-     * @param descrizione
-     *                        descrizione testuale della facility
-     * @param quantity
-     *                        quantita' associata alla facility
-     * @throws NullPointerException
-     *                                  se una qualsiasi delle informazioni
-     *                                  {@code codice} e {@code descrizione} è
-     *                                  nulla.
+     * Costruisce una facility quantitativa, inizializzando prima la superclasse.
+     * <p>Il contratto originale non impone un limite inferiore a quantity.
+     * @param codice identificativo
+     * @param descrizione descrizione
+     * @param quantity quantità disponibile
+     * @throws NullPointerException se codice o descrizione è null
      */
     public QuantitativeFacility(String codice, String descrizione,
-            int quantity) {
+                                int quantity) {
         super(codice, descrizione);
         this.quantity = quantity;
     }
 
     /**
-     * @return the quantity
+     * Restituisce la quantità associata alla facility.
+     * @return quantità disponibile
      */
     public int getQuantity() {
         return quantity;
     }
 
-    /*
-     * Questa quantitative facility soddisfa una facility data se e solo se la
-     * facility data è una quantitative facility, ha lo stesso codice e la
-     * quantità associata a questa facility è maggiore o uguale alla quantità
-     * della facility data.
+    /**
+     * Confronta codice, tipo concreto e quantità disponibile.
+     * @param o facility richiesta
+     * @return true se o è quantitativa, ha lo stesso codice e richiede
+     * una quantità non superiore a questa
+     * @throws NullPointerException se o è null
      */
     @Override
     public boolean satisfies(Facility o) {
         if (o == null)
             throw new NullPointerException(
                     "Tentativo di controllare la soddisfacibilità di una facility nulla");
+        // instanceof controlla il tipo concreto prima del cast.
         if (o instanceof QuantitativeFacility) {
             // Controllo se la facility ha lo stesso codice e la quantità
             // soddisfa la richiesta

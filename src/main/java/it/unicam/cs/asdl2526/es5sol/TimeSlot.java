@@ -1,25 +1,37 @@
-/**
- * 
- */
 package it.unicam.cs.asdl2526.es5sol;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * Un time slot è un intervallo di tempo continuo che può essere associato ad
- * una prenotazione. Gli oggetti della classe sono immutabili. Non sono ammessi
- * time slot che iniziano e finiscono nello stesso istante.
- * 
- * @author Luca Tesei
+ * Rappresenta un intervallo di tempo continuo delimitato da un istante di
+ * inizio e da un istante di fine.
+ * <p>
+ * Gli oggetti di questa classe sono immutabili: dopo la costruzione gli istanti
+ * di inizio e fine non possono cambiare. Poiché {@link GregorianCalendar} è
+ * invece una classe mutabile, l'implementazione usa copie difensive per evitare
+ * che una modifica effettuata dall'esterno possa alterare lo stato del time
+ * slot.
+ * <p>
+ * L'esercizio usa questa classe per applicare in modo coordinato i concetti di
+ * uguaglianza logica, codice hash e ordinamento naturale. Due time slot sono
+ * uguali quando hanno esattamente gli stessi istanti di inizio e fine, cioè gli
+ * stessi valori temporali espressi in millisecondi; il codice hash usa gli
+ * stessi dati e {@link #compareTo(TimeSlot)} restituisce zero se e solo se i
+ * due oggetti sono uguali.
+ * <p>
+ * Non sono ammessi time slot di durata nulla o negativa: l'istante di inizio
+ * deve precedere strettamente quello di fine.
  *
+ * @author Luca Tesei
  */
 public class TimeSlot implements Comparable<TimeSlot> {
 
     /**
-     * Rappresenta la soglia di tolleranza da considerare nella sovrapposizione
-     * di due Time Slot. Se si sovrappongono per un numero di minuti minore o
-     * uguale a questa soglia allora NON vengono considerati sovrapposti.
+     * Soglia di tolleranza, espressa in minuti, usata da
+     * {@link #overlapsWith(TimeSlot)}. Due time slot sono considerati
+     * sovrapposti solo se la loro sovrapposizione è strettamente maggiore di
+     * questa soglia.
      */
     public static final int MINUTES_OF_TOLERANCE_FOR_OVERLAPPING = 5;
 
@@ -28,18 +40,18 @@ public class TimeSlot implements Comparable<TimeSlot> {
     private final GregorianCalendar stop;
 
     /**
-     * Crea un time slot tra due istanti di inizio e fine
-     * 
-     * @param start
-     *                  inizio del time slot
-     * @param stop
-     *                  fine del time slot
-     * @throws NullPointerException
-     *                                      se uno dei due istanti, start o
-     *                                      stop, è null
-     * @throws IllegalArgumentException
-     *                                      se start è uguale o successivo a
-     *                                      stop
+     * Costruisce un time slot compreso tra gli istanti {@code start} e
+     * {@code stop}.
+     * <p>
+     * Per garantire l'immutabilità vengono memorizzate copie degli oggetti
+     * {@link GregorianCalendar} ricevuti e non i riferimenti originali.
+     *
+     * @param start l'istante iniziale del time slot
+     * @param stop l'istante finale del time slot
+     * @throws NullPointerException se {@code start} o {@code stop} è
+     *         {@code null}
+     * @throws IllegalArgumentException se {@code start} è uguale o successivo
+     *         a {@code stop}
      */
     public TimeSlot(GregorianCalendar start, GregorianCalendar stop) {
         if (start == null)
@@ -51,28 +63,49 @@ public class TimeSlot implements Comparable<TimeSlot> {
         if (start.compareTo(stop) >= 0)
             throw new IllegalArgumentException(
                     "Tentativo di creare un time slot con inizio maggiore o uguale di fine");
-        this.start = start;
-        this.stop = stop;
+
+        /*
+         * Copie difensive: GregorianCalendar è mutabile. Se conservassimo i
+         * riferimenti ricevuti, il chiamante potrebbe modificare dall'esterno
+         * lo stato di un TimeSlot già costruito.
+         */
+        this.start = (GregorianCalendar) start.clone();
+        this.stop = (GregorianCalendar) stop.clone();
     }
 
     /**
-     * @return the start
+     * Restituisce l'istante iniziale del time slot.
+     * <p>
+     * Viene restituita una copia difensiva: modificare il calendario ottenuto
+     * non modifica lo stato di questo oggetto.
+     *
+     * @return una copia dell'istante iniziale
      */
     public GregorianCalendar getStart() {
-        return start;
+        return (GregorianCalendar) start.clone();
     }
 
     /**
-     * @return the stop
+     * Restituisce l'istante finale del time slot.
+     * <p>
+     * Viene restituita una copia difensiva: modificare il calendario ottenuto
+     * non modifica lo stato di questo oggetto.
+     *
+     * @return una copia dell'istante finale
      */
     public GregorianCalendar getStop() {
-        return stop;
+        return (GregorianCalendar) stop.clone();
     }
 
-    /*
-     * Un time slot è uguale a un altro se rappresenta esattamente lo stesso
-     * intervallo di tempo, cioè se inizia nello stesso istante e termina nello
-     * stesso istante.
+    /**
+     * Verifica l'uguaglianza logica tra questo time slot e un altro oggetto.
+     * Due time slot sono uguali se e solo se rappresentano esattamente lo stesso
+     * intervallo, cioè gli istanti di inizio e fine rappresentano
+     * rispettivamente gli stessi valori temporali in millisecondi.
+     *
+     * @param obj l'oggetto con cui confrontare questo time slot
+     * @return {@code true} se {@code obj} è un time slot con gli stessi istanti
+     *         di inizio e fine, {@code false} altrimenti
      */
     @Override
     public boolean equals(Object obj) {
@@ -81,140 +114,126 @@ public class TimeSlot implements Comparable<TimeSlot> {
         if (!(obj instanceof TimeSlot))
             return false;
         TimeSlot other = (TimeSlot) obj;
-        if (start == null) {
-            if (other.start != null)
-                return false;
-        } else if (!start.equals(other.start))
-            return false;
-        if (stop == null) {
-            if (other.stop != null)
-                return false;
-        } else if (!stop.equals(other.stop))
-            return false;
-        return true;
+
+        /*
+         * L'identità logica dipende dai valori temporali, non dall'identità
+         * degli oggetti GregorianCalendar né da altre loro proprietà interne.
+         */
+        return this.start.getTimeInMillis() == other.start.getTimeInMillis()
+                && this.stop.getTimeInMillis() == other.stop.getTimeInMillis();
     }
 
-    /*
-     * Il codice hash associato a un timeslot viene calcolato a partire dei due
-     * istanti di inizio e fine, in accordo con i campi usati per il metodo
-     * equals.
+    /**
+     * Restituisce un codice hash coerente con {@link #equals(Object)}.
+     * <p>
+     * Poiché l'uguaglianza dipende dai valori temporali degli istanti di inizio
+     * e fine, anche il codice hash viene calcolato a partire dagli stessi due
+     * valori. Oggetti uguali secondo {@code equals} producono quindi sempre lo
+     * stesso codice hash.
+     *
+     * @return il codice hash di questo time slot
      */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + start.hashCode();
-        result = prime * result + stop.hashCode();
+        long temp;
+
+        /*
+         * getTimeInMillis() restituisce un long: lo ripieghiamo in un int
+         * combinando con XOR i 32 bit alti e i 32 bit bassi.
+         */
+        temp = start.getTimeInMillis();
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = stop.getTimeInMillis();
+        result = prime * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 
-    /*
-     * Un time slot precede un altro se inizia prima. Se due time slot iniziano
-     * nello stesso momento quello che finisce prima precede l'altro. Se hanno
-     * stesso inizio e stessa fine sono uguali, in compatibilità con equals.
+    /**
+     * Confronta questo time slot con un altro secondo l'ordinamento naturale
+     * della classe. Un time slot precede un altro se inizia prima; a parità di
+     * istante iniziale, precede quello che termina prima.
+     * <p>
+     * L'ordinamento è compatibile con {@link #equals(Object)}: il metodo
+     * restituisce zero se e solo se i due time slot hanno lo stesso inizio e la
+     * stessa fine.
+     *
+     * @param o il time slot con cui effettuare il confronto
+     * @return un valore negativo se questo time slot precede {@code o}, zero se
+     *         i due time slot sono uguali, un valore positivo se questo time
+     *         slot segue {@code o}
+     * @throws NullPointerException se {@code o} è {@code null}
      */
     @Override
     public int compareTo(TimeSlot o) {
         if (o == null)
             throw new NullPointerException(
                     "Tentativo di comparare un time slot nullo");
-        int cmp = this.start.compareTo(o.start);
+
+        /*
+         * Ordinamento lessicografico: prima confrontiamo l'inizio; soltanto a
+         * parità di inizio passiamo alla fine. Usiamo gli stessi valori
+         * temporali scelti da equals, così compareTo restituisce 0 se e solo se
+         * equals restituisce true.
+         */
+        int cmp = Long.compare(this.start.getTimeInMillis(),
+                o.start.getTimeInMillis());
         if (cmp != 0)
-            // i due time slot non iniziano nello stesso momento, quindi cmp dà
-            // il valore giusto di ritorno
             return cmp;
-        // i due time slot iniziano nello stesso momento
-        cmp = this.stop.compareTo(o.stop);
-        // se zero allora sono uguali, altrimenti cmp dà il valore giusto di
-        // ritorno
-        return cmp;
+        return Long.compare(this.stop.getTimeInMillis(),
+                o.stop.getTimeInMillis());
     }
 
     /**
-     * Determina il numero di minuti di sovrapposizione tra questo timeslot e
+     * Determina la durata in minuti dell'intersezione tra questo time slot e
      * quello passato.
-     * 
-     * @param o
-     *              il time slot da confrontare con questo
-     * @return il numero di minuti di sovrapposizione tra questo time slot e
-     *         quello passato, oppure -1 se non c'è sovrapposizione. Se questo
-     *         time slot finisce esattamente al millisecondo dove inizia il time
-     *         slot <code>o</code> non c'è sovrapposizione, così come se questo
-     *         time slot inizia esattamente al millisecondo in cui finisce il
-     *         time slot <code>o</code>. In questi ultimi due casi il risultato
-     *         deve essere -1 e non 0. Nel caso in cui la sovrapposizione non è
-     *         di un numero esatto di minuti, cioè ci sono secondi e
-     *         millisecondi che avanzano, il numero dei minuti di
-     *         sovrapposizione da restituire deve essere arrotondato per difetto
-     * @throws NullPointerException
-     *                                      se il time slot passato è nullo
-     * @throws IllegalArgumentException
-     *                                      se i minuti di sovrapposizione
-     *                                      superano Integer.MAX_VALUE
+     * <p>
+     * Se i due intervalli non hanno istanti in comune, oppure si toccano
+     * soltanto in un estremo, il metodo restituisce {@code -1}. Una
+     * sovrapposizione positiva inferiore a un minuto produce invece
+     * {@code 0}. Se la durata dell'intersezione non è un numero esatto di
+     * minuti, vengono ignorati secondi e millisecondi residui: il risultato è
+     * quindi arrotondato per difetto.
+     * <p>
+     * Il risultato è simmetrico: per ogni coppia di time slot {@code a} e
+     * {@code b}, {@code a.getMinutesOfOverlappingWith(b)} coincide con
+     * {@code b.getMinutesOfOverlappingWith(a)}.
+     *
+     * @param o il time slot da confrontare con questo
+     * @return i minuti interi di sovrapposizione, oppure {@code -1} se non
+     *         esiste una sovrapposizione di durata positiva
+     * @throws NullPointerException se {@code o} è {@code null}
+     * @throws IllegalArgumentException se il numero di minuti di
+     *         sovrapposizione supera {@link Integer#MAX_VALUE}
      */
     public int getMinutesOfOverlappingWith(TimeSlot o) {
         if (o == null)
             throw new NullPointerException(
-                    "Tentativo di calcolare i minuti di sovrapposizione di "
-                            + "questo time slot con un time slot nullo");
-        // Controllo tutti i casi di sovrapposizione
-        int cmp1 = this.start.compareTo(o.start);
-        int cmp2 = this.start.compareTo(o.stop);
-        int cmp3 = this.stop.compareTo(o.start);
-        int cmp4 = this.stop.compareTo(o.stop);
-        long overlappingMilliseconds;
-        if (cmp1 <= 0 && cmp3 >= 0 && cmp4 <= 0) {
-            // questo timeslot inizia prima di quello passato e termina dopo che
-            // quello passato è iniziato
-            // this.start ... [o.start ... this.stop] ... o.stop
-            overlappingMilliseconds = this.stop.getTimeInMillis()
-                    - o.start.getTimeInMillis();
-            return computeMinutes(overlappingMilliseconds);
+                    "Tentativo di calcolare i minuti di sovrapposizione con un time slot nullo");
 
-        }
-        if (cmp1 <= 0 && cmp4 >= 0) {
-            // questo timeslot inizia prima di quello passato e termina dopo che
-            // quello passato è finito
-            // this.start ... [o.start ... o.stop] ... this.stop
-            overlappingMilliseconds = o.stop.getTimeInMillis()
-                    - o.start.getTimeInMillis();
-            return computeMinutes(overlappingMilliseconds);
-        }
+        /*
+         * L'intersezione di due intervalli [a,b] e [c,d] inizia nel maggiore
+         * dei due estremi iniziali e termina nel minore dei due estremi finali.
+         * Questo evita di distinguere manualmente tutti i possibili casi di
+         * sovrapposizione.
+         */
+        long overlapStart = Math.max(this.start.getTimeInMillis(),
+                o.start.getTimeInMillis());
+        long overlapStop = Math.min(this.stop.getTimeInMillis(),
+                o.stop.getTimeInMillis());
 
-        if (cmp1 >= 0 && cmp2 <= 0 && cmp4 >= 0) {
-            // questo timeslot inizia dopo di quello passato e termina dopo che
-            // quello passato è terminato
-            // o.start ... [this.start ... o.stop] ... this.stop
-            overlappingMilliseconds = o.stop.getTimeInMillis()
-                    - this.start.getTimeInMillis();
-            return computeMinutes(overlappingMilliseconds);
-        }
-        if (cmp1 >= 0 && cmp4 <= 0) {
-            // questo timeslot inizia prima di quello passato e termina dopo che
-            // quello passato è finito
-            // o.start ... [this.start ... this.stop] ... o.stop
-            overlappingMilliseconds = this.stop.getTimeInMillis()
-                    - this.start.getTimeInMillis();
-            return computeMinutes(overlappingMilliseconds);
-        }
-        // non c'è sovrapposizione
-        return -1;
-    }
-
-    /*
-     * Calcola il numero di minuti di sovrapposizione a partire dai millisecondi
-     * facendo il troncamento. Gestisce il caso particolare in cui il numero di
-     * millisecondi passati è 0. Lancia IllegalArgumentException se il numero di
-     * minuti è troppo grande per un int.
-     */
-    private int computeMinutes(long overlappingMilliseconds) {
-        // Caso particolare di 0 millisecondi di sovrapposizione, da considerare
-        // non sovrapposizione.
-        if (overlappingMilliseconds == 0)
+        if (overlapStop <= overlapStart)
+            // Intervalli separati oppure coincidenti soltanto in un estremo.
             return -1;
-        // la divisione intera tra long butta via i decimali
-        // 60000 millisecondi = 1 minuto
+
+        long overlappingMilliseconds = overlapStop - overlapStart;
         long truncatedOverlappingMinutes = overlappingMilliseconds / 60000;
+
+        /*
+         * La divisione intera tronca secondi e millisecondi residui. Una
+         * sovrapposizione positiva inferiore a un minuto produce quindi 0.
+         */
         if (truncatedOverlappingMinutes > Integer.MAX_VALUE)
             throw new IllegalArgumentException(
                     "Numero di minuti di sovrapposizione troppo grande per un int");
@@ -223,38 +242,42 @@ public class TimeSlot implements Comparable<TimeSlot> {
     }
 
     /**
-     * Determina se questo time slot si sovrappone a un altro time slot dato,
-     * considerando la soglia di tolleranza.
-     * 
-     * @param o
-     *              il time slot che viene passato per il controllo di
-     *              sovrapposizione
-     * @return true se questo time slot si sovrappone per più (strettamente) di
-     *         MINUTES_OF_TOLERANCE_FOR_OVERLAPPING minuti a quello passato
-     * @throws NullPointerException
-     *                                  se il time slot passato è nullo
+     * Determina se questo time slot è sovrapposto a un altro oltre la soglia di
+     * tolleranza definita da {@link #MINUTES_OF_TOLERANCE_FOR_OVERLAPPING}.
+     * <p>
+     * La soglia è stretta: una sovrapposizione di esattamente 5 minuti non è
+     * sufficiente, mentre una sovrapposizione di 6 minuti è considerata tale.
+     * Il metodo riusa il servizio offerto da
+     * {@link #getMinutesOfOverlappingWith(TimeSlot)}.
+     *
+     * @param o il time slot con cui verificare la sovrapposizione
+     * @return {@code true} se la sovrapposizione è strettamente maggiore della
+     *         soglia di tolleranza, {@code false} altrimenti
+     * @throws NullPointerException se {@code o} è {@code null}
      */
     public boolean overlapsWith(TimeSlot o) {
-        // Calcolo i minuti di sovrapposizione
+        /*
+         * Riutilizziamo un metodo già definito nell'API invece di duplicare la
+         * logica di calcolo della sovrapposizione.
+         */
         int minutes = this.getMinutesOfOverlappingWith(o);
-        if (minutes == -1)
-            // non c'è sovrapposizione
-            return false;
-        if (minutes <= MINUTES_OF_TOLERANCE_FOR_OVERLAPPING)
-            // la soglia non è superata
-            return false;
-        // c'è sovrapposizione
-        return true;
+        return minutes > MINUTES_OF_TOLERANCE_FOR_OVERLAPPING;
     }
 
-    /*
-     * Ridefinisce il modo in cui viene reso un TimeSlot con una String.
-     * 
-     * Esempio 1, stringa da restituire: "[4/11/2019 11.0 - 4/11/2019 13.0]"
-     * 
-     * Esempio 2, stringa da restituire: "[10/11/2019 11.15 - 10/11/2019 23.45]"
-     * 
-     * I secondi e i millisecondi eventuali non vengono scritti.
+    /**
+     * Restituisce una rappresentazione testuale del time slot nel formato
+     * {@code [giorno/mese/anno ora.minuti - giorno/mese/anno ora.minuti]}.
+     * Secondi e millisecondi non vengono rappresentati.
+     * <p>
+     * Esempi:
+     * <ul>
+     * <li>{@code [4/11/2019 11.0 - 4/11/2019 13.0]}</li>
+     * <li>{@code [10/11/2019 11.15 - 10/11/2019 23.45]}</li>
+     * </ul>
+     * Il metodo restituisce una stringa e non effettua alcuna stampa sullo
+     * standard output.
+     *
+     * @return la rappresentazione testuale di questo time slot
      */
     @Override
     public String toString() {
@@ -268,5 +291,4 @@ public class TimeSlot implements Comparable<TimeSlot> {
                 + " " + stop.get(Calendar.HOUR_OF_DAY) + "."
                 + stop.get(Calendar.MINUTE) + "]";
     }
-
 }

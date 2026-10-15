@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package it.unicam.cs.asdl2526.es5sol;
 
@@ -14,8 +14,9 @@ import org.junit.jupiter.api.Test;
 class QuantitativeFacilityTest {
 
     /**
-     * Test method for {@link it.unicam.cs.asdl1920.mp1.QuantitativeFacility#satisfies(it.unicam.cs.asdl1920.mp1.Facility)}.
+     * Test method for {@link QuantitativeFacility#satisfies(Facility)}.
      */
+    // Test del contratto pubblico e dei suoi casi limite.
     @Test
     final void testSatisfies() {
         PresenceFacility f1 = new PresenceFacility("HDMI", "Presenza di un proiettore HDMI");
@@ -44,11 +45,12 @@ class QuantitativeFacilityTest {
     }
 
     /**
-     * Test method for {@link it.unicam.cs.asdl1920.mp1.QuantitativeFacility#QuantitativeFacility(String, String, int)}.
+     * Test method for {@link QuantitativeFacility#QuantitativeFacility(String, String, int)}.
      */
+    // Test del contratto pubblico e dei suoi casi limite.
     @Test
     final void testQuantitativeFacility() {
-     // Testa se il controllo di null è corretto
+        // Testa se il controllo di null è corretto
         assertThrows(NullPointerException.class,
                 () -> new QuantitativeFacility("POSTI", null, 50));
         assertThrows(NullPointerException.class,
@@ -56,12 +58,16 @@ class QuantitativeFacilityTest {
         assertThrows(NullPointerException.class,
                 () -> new QuantitativeFacility(null, null, 50));
     }
-    
+
+    // Test del contratto pubblico e dei suoi casi limite.
+
     @Test
     final void testGetCodice() {
         QuantitativeFacility f1 = new QuantitativeFacility("POSTI", "Presenza posti a sedere normali", 50);
         assertEquals("POSTI", f1.getCodice());
     }
+
+    // Test del contratto pubblico e dei suoi casi limite.
 
     @Test
     final void testGetDescrizione() {
@@ -70,8 +76,9 @@ class QuantitativeFacilityTest {
     }
 
     /**
-     * Test method for {@link it.unicam.cs.asdl1920.mp1.QuantitativeFacility#getQuantity()}.
+     * Test method for {@link QuantitativeFacility#getQuantity()}.
      */
+    // Test del contratto pubblico e dei suoi casi limite.
     @Test
     final void testGetQuantity() {
         QuantitativeFacility f1 = new QuantitativeFacility("POSTI", "Presenza posti a sedere normali", 50);

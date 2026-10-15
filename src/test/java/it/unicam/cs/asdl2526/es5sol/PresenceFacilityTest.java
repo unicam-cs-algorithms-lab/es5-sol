@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 
 class PresenceFacilityTest {
 
+    // Test del contratto pubblico e dei suoi casi limite.
+
     @Test
     final void testSatisfies() {
         PresenceFacility f1 = new PresenceFacility("HDMI", "Presenza di un proiettore HDMI");
@@ -31,9 +33,11 @@ class PresenceFacilityTest {
         assertFalse(f4.satisfies(f2));
     }
 
+    // Test del contratto pubblico e dei suoi casi limite.
+
     @Test
     final void testPresenceFacility() {
-     // Testa se il controllo di null è corretto
+        // Testa se il controllo di null è corretto
         assertThrows(NullPointerException.class,
                 () -> new PresenceFacility("HDMI", null));
         assertThrows(NullPointerException.class,
@@ -41,6 +45,8 @@ class PresenceFacilityTest {
         assertThrows(NullPointerException.class,
                 () -> new PresenceFacility(null, null));
     }
+
+    // Test del contratto pubblico e dei suoi casi limite.
 
     @Test
     final void testHashCode() {
@@ -52,11 +58,16 @@ class PresenceFacilityTest {
     }
 
 
+    // Test del contratto pubblico e dei suoi casi limite.
+
+
     @Test
     final void testGetCodice() {
         PresenceFacility f1 = new PresenceFacility("HDMI", "Presenza di un proiettore HDMI");
         assertEquals("HDMI", f1.getCodice());
     }
+
+    // Test del contratto pubblico e dei suoi casi limite.
 
     @Test
     final void testGetDescrizione() {
@@ -65,6 +76,7 @@ class PresenceFacilityTest {
     }
 
     @SuppressWarnings("unlikely-arg-type")
+    // Test del contratto pubblico e dei suoi casi limite.
     @Test
     final void testEqualsObject() {
         PresenceFacility f1 = new PresenceFacility("HDMI", "Presenza di un proiettore HDMI");
